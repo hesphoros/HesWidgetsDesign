@@ -8,6 +8,8 @@ find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 add_executable(HesWidgetsDesign WIN32
     FramelessWindow.cpp
+    MainWindow.cpp
+    titlebar.cpp
     main.cpp
 )
 
