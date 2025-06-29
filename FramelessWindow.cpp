@@ -1,27 +1,51 @@
 // FramelessWindow.cpp
 #include "FramelessWindow.h"
 #include <QEvent>
+#include <dwmapi.h>
+#include <windowsx.h>
+
+#pragma comment(lib, "dwmapi.lib")
+
+namespace {
+    constexpr int RESIZE_WINDOW_WIDTH = 8;
+
+    #ifndef _MSC_VER
+    #ifndef DWMWA_WINDOW_CORNER_PREFERENCE
+    enum DWM_WINDOW_CORNER_PREFERENCE {
+        DWMWCP_DEFAULT    = 0,
+        DWMWCP_DONOTROUND = 1,
+        DWMWCP_ROUND      = 2,
+        DWMWCP_ROUNDSMALL = 3
+    };
+    constexpr DWORD DWMWA_WINDOW_CORNER_PREFERENCE = 33;
+    #endif
+    #endif
+} // anonymous namespace
+
+class FramelessWindow::FramelessWindowPrivate {
+public:
+    FramelessWindowPrivate(FramelessWindow* q) : q_ptr(q) {}
+
+    int adjustResizeWindow(const QPoint& pos);
+    void initWindow();
+
+    FramelessWindow* q_ptr;
+    QWidget* titleBar = nullptr;
+    bool isMaximized = false;
+};
 
 FramelessWindow::FramelessWindow(QWidget* parent)
-        : QWidget(parent)
+    : QWidget(parent)
+    , d_ptr(std::make_unique<FramelessWindowPrivate>(this))
 {
-    setWindowFlags(windowFlags() | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
-    setAttribute(Qt::WA_TranslucentBackground);
-
-    HWND hwnd = HWND(winId());
-    LONG style = ::GetWindowLong(hwnd, GWL_STYLE);
-    ::SetWindowLong(hwnd, GWL_STYLE,
-                    style | WS_THICKFRAME | WS_CAPTION | WS_MAXIMIZEBOX);
-
-    UINT preference = DWMWCP_ROUND;
-    DwmSetWindowAttribute(hwnd,
-                          DWMWA_WINDOW_CORNER_PREFERENCE,
-                          &preference, sizeof(preference));
+    d_ptr->initWindow();
 }
+
+FramelessWindow::~FramelessWindow() = default;
 
 void FramelessWindow::setTitleBar(QWidget* titleBar)
 {
-    m_titleBar = titleBar;
+    d_ptr->titleBar = titleBar;
 }
 
 bool FramelessWindow::nativeEvent(const QByteArray& eventType, void* message, qint64* result)
@@ -37,18 +61,18 @@ bool FramelessWindow::nativeEvent(const QByteArray& eventType, void* message, qi
             const LONG gy = GET_Y_LPARAM(msg->lParam);
             QPoint globalPos(gx, gy);
 
-            int hit = adjustResizeWindow(globalPos);
+            int hit = d_ptr->adjustResizeWindow(globalPos);
             if (hit) {
                 *result = hit;
                 return true;
             }
 
             // 标题栏拖拽检测
-            if (m_titleBar) {
+            if (d_ptr->titleBar) {
                 double dpr = devicePixelRatioF();
-                QPoint local = m_titleBar->mapFromGlobal(QPoint(gx / dpr, gy / dpr));
-                if (m_titleBar->rect().contains(local)) {
-                    QWidget* child = m_titleBar->childAt(local);
+                QPoint local = d_ptr->titleBar->mapFromGlobal(QPoint(gx / dpr, gy / dpr));
+                if (d_ptr->titleBar->rect().contains(local)) {
+                    QWidget* child = d_ptr->titleBar->childAt(local);
                     if (!child) {
                         *result = HTCAPTION;
                         return true;
@@ -66,8 +90,8 @@ bool FramelessWindow::event(QEvent* event)
 {
     if (event->type() == QEvent::WindowStateChange) {
         bool maximized = isMaximized();
-        if (maximized != m_isMaximized) {
-            m_isMaximized = maximized;
+        if (maximized != d_ptr->isMaximized) {
+            d_ptr->isMaximized = maximized;
             if (maximized) {
                 setContentsMargins(0, 0, 0, 0);
             } else {
@@ -78,18 +102,34 @@ bool FramelessWindow::event(QEvent* event)
     return QWidget::event(event);
 }
 
-int FramelessWindow::adjustResizeWindow(const QPoint& pos)
+void FramelessWindow::FramelessWindowPrivate::initWindow()
+{
+    q_ptr->setWindowFlags(q_ptr->windowFlags() | Qt::FramelessWindowHint | Qt::WindowSystemMenuHint);
+    q_ptr->setAttribute(Qt::WA_TranslucentBackground);
+
+    HWND hwnd = HWND(q_ptr->winId());
+    LONG style = ::GetWindowLong(hwnd, GWL_STYLE);
+    ::SetWindowLong(hwnd, GWL_STYLE,
+                    style | WS_THICKFRAME | WS_CAPTION | WS_MAXIMIZEBOX);
+
+    UINT preference = DWMWCP_ROUND;
+    DwmSetWindowAttribute(hwnd,
+                          DWMWA_WINDOW_CORNER_PREFERENCE,
+                          &preference, sizeof(preference));
+}
+
+int FramelessWindow::FramelessWindowPrivate::adjustResizeWindow(const QPoint& pos)
 {
     int result = 0;
 
     RECT winrect;
-    GetWindowRect(HWND(this->winId()), &winrect);
+    GetWindowRect(HWND(q_ptr->winId()), &winrect);
 
     int mouse_x = pos.x();
     int mouse_y = pos.y();
 
-    bool resizeWidth = this->minimumWidth() != this->maximumWidth();
-    bool resizeHieght = this->minimumHeight() != this->maximumHeight();
+    bool resizeWidth = q_ptr->minimumWidth() != q_ptr->maximumWidth();
+    bool resizeHeight = q_ptr->minimumHeight() != q_ptr->maximumHeight();
 
     if (resizeWidth) {
         if (mouse_x > winrect.left && mouse_x < winrect.left + RESIZE_WINDOW_WIDTH)
@@ -97,26 +137,30 @@ int FramelessWindow::adjustResizeWindow(const QPoint& pos)
         if (mouse_x < winrect.right && mouse_x >= winrect.right - RESIZE_WINDOW_WIDTH)
             result = HTRIGHT;
     }
-    if (resizeHieght) {
+    if (resizeHeight) {
         if (mouse_y < winrect.top + RESIZE_WINDOW_WIDTH && mouse_y >= winrect.top)
             result = HTTOP;
 
         if (mouse_y <= winrect.bottom && mouse_y > winrect.bottom - RESIZE_WINDOW_WIDTH)
             result = HTBOTTOM;
     }
-    if (resizeWidth && resizeHieght) {
+    if (resizeWidth && resizeHeight) {
         // topleft corner
-        if (mouse_x >= winrect.left && mouse_x < winrect.left + RESIZE_WINDOW_WIDTH && mouse_y >= winrect.top && mouse_y < winrect.top + RESIZE_WINDOW_WIDTH) {
+        if (mouse_x >= winrect.left && mouse_x < winrect.left + RESIZE_WINDOW_WIDTH && 
+            mouse_y >= winrect.top && mouse_y < winrect.top + RESIZE_WINDOW_WIDTH) {
             result = HTTOPLEFT;
         }
         // topRight corner
-        if (mouse_x <= winrect.right && mouse_x > winrect.right - RESIZE_WINDOW_WIDTH && mouse_y >= winrect.top && mouse_y < winrect.top + RESIZE_WINDOW_WIDTH)
+        if (mouse_x <= winrect.right && mouse_x > winrect.right - RESIZE_WINDOW_WIDTH && 
+            mouse_y >= winrect.top && mouse_y < winrect.top + RESIZE_WINDOW_WIDTH)
             result = HTTOPRIGHT;
-        // leftBottom  corner
-        if (mouse_x >= winrect.left && mouse_x < winrect.left + RESIZE_WINDOW_WIDTH && mouse_y <= winrect.bottom && mouse_y > winrect.bottom - RESIZE_WINDOW_WIDTH)
+        // leftBottom corner
+        if (mouse_x >= winrect.left && mouse_x < winrect.left + RESIZE_WINDOW_WIDTH && 
+            mouse_y <= winrect.bottom && mouse_y > winrect.bottom - RESIZE_WINDOW_WIDTH)
             result = HTBOTTOMLEFT;
-        // rightbottom  corner
-        if (mouse_x <= winrect.right && mouse_x > winrect.right - RESIZE_WINDOW_WIDTH && mouse_y <= winrect.bottom && mouse_y > winrect.bottom - RESIZE_WINDOW_WIDTH)
+        // rightbottom corner
+        if (mouse_x <= winrect.right && mouse_x > winrect.right - RESIZE_WINDOW_WIDTH && 
+            mouse_y <= winrect.bottom && mouse_y > winrect.bottom - RESIZE_WINDOW_WIDTH)
             result = HTBOTTOMRIGHT;
     }
     return result;
