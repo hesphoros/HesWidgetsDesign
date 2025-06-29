@@ -90,16 +90,16 @@ void Border::mouseMoveEvent(QMouseEvent *event)
     return QWidget::mouseMoveEvent(event);
 }
 
-//void Border::paintEvent(QPaintEvent *)
-//{
-//    QPainter painter(this);
-//    painter.setPen(Qt::PenStyle::NoPen);
-//    painter.setBrush(QColor(0,0,0,1));
-//    painter.drawRect(rect());
-//}
+void Border::paintEvent(QPaintEvent *)
+{
+   QPainter painter(this);
+   painter.setPen(Qt::PenStyle::NoPen);
+   painter.setBrush(QColor(0,0,0,1));
+   painter.drawRect(rect());
+}
 
 // 测试边框代码
-void Border::paintEvent(QPaintEvent* event) {
-	QPainter painter(this);
-	painter.fillRect(0, 0, border_width, height(), Qt::black); // 示例绘制
-}
+// void Border::paintEvent(QPaintEvent* event) {
+// 	QPainter painter(this);
+// 	painter.fillRect(0, 0, border_width, height(), Qt::black); // 示例绘制
+// }
