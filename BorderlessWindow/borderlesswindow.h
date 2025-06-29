@@ -7,6 +7,10 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPainterPath>
+#ifdef Q_OS_WIN
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
+#endif
 
 class Border;
 class MainArea;
@@ -63,6 +67,7 @@ protected:
      * 处理窗口状态变化（如最大化/最小化/正常状态切换）。
      */
     virtual void changeEvent(QEvent *event) override;
+   
 
 private:
     QGridLayout *gridLayout = nullptr;       ///< 主网格布局管理器

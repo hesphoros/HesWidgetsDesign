@@ -72,5 +72,13 @@ protected:
      * 绘制边框的可视化效果(如需要)
      */
     void paintEvent(QPaintEvent* event) override;
+
+    /**
+     * @brief 显示事件处理
+     * @param event 显示事件对象
+     *
+     * 处理窗口显示事件
+     */
+    void showEvent(QShowEvent *event) override;
 };
 #endif // BORDER_H

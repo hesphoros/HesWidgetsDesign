@@ -1,4 +1,9 @@
 ﻿#include "border.h"
+#ifdef Q_OS_WIN
+#include <windows.h>
+#include <dwmapi.h>
+#pragma comment(lib, "dwmapi.lib")
+#endif
 
 Border::Border(QWidget *parent, BorderType bordertype)
     : QWidget{parent},
@@ -92,14 +97,25 @@ void Border::mouseMoveEvent(QMouseEvent *event)
 
 void Border::paintEvent(QPaintEvent *)
 {
-   QPainter painter(this);
-   painter.setPen(Qt::PenStyle::NoPen);
-   painter.setBrush(QColor(0,0,0,1));
-   painter.drawRect(rect());
+    // 保持边框完全透明，不做任何绘制，提升 DWM 效果美观度
+    //    QPainter painter(this);
+    //    painter.setPen(Qt::PenStyle::NoPen);
+    //    painter.setBrush(QColor(0,0,0,1));
+    //    painter.drawRect(rect());
 }
 
-// 测试边框代码
-// void Border::paintEvent(QPaintEvent* event) {
-// 	QPainter painter(this);
-// 	painter.fillRect(0, 0, border_width, height(), Qt::black); // 示例绘制
-// }
+
+void Border::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+#ifdef Q_OS_WIN
+    HWND hwnd = reinterpret_cast<HWND>(this->winId());
+    // 设置圆角
+    UINT preference = 2; // DWMWCP_ROUND
+    DwmSetWindowAttribute(hwnd, 33 /*DWMWA_WINDOW_CORNER_PREFERENCE*/, &preference, sizeof(preference));
+    // 启用系统阴影
+    MARGINS shadowOn = {1, 1, 1, 1};
+    DwmExtendFrameIntoClientArea(hwnd, &shadowOn);
+#endif
+}
+

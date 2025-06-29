@@ -1,6 +1,9 @@
 ﻿#include "borderlesswindow.h"
 #include "border.h"
 #include "mainarea.h"
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
 
 BorderlessWindow::BorderlessWindow(QWidget *parent)
     : QWidget{parent},
@@ -77,3 +80,4 @@ void BorderlessWindow::changeEvent(QEvent *event)
     this->update();
     QWidget::changeEvent(event);
 }
+
