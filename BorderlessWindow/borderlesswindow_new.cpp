@@ -79,25 +79,26 @@ void BorderlessWindow::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton) {
         EdgeType edge = getEdgeType(event->pos());
         qDebug() << "Mouse press at edge type:" << static_cast<int>(edge);
-          if (edge != None) {
+        
+        if (edge != None) {
 #ifdef Q_OS_WIN
-            // 使用 WM_SYSCOMMAND 启动系统调整大小操作
+            // 使用 Windows API 开始调整大小
             ReleaseCapture();
             HWND hwnd = reinterpret_cast<HWND>(this->winId());
             
-            WPARAM wParam = 0;
-            if (edge == Left) wParam = SC_SIZE | WMSZ_LEFT;
-            else if (edge == Right) wParam = SC_SIZE | WMSZ_RIGHT;
-            else if (edge == Top) wParam = SC_SIZE | WMSZ_TOP;
-            else if (edge == Bottom) wParam = SC_SIZE | WMSZ_BOTTOM;
-            else if (edge == TopLeft) wParam = SC_SIZE | WMSZ_TOPLEFT;
-            else if (edge == TopRight) wParam = SC_SIZE | WMSZ_TOPRIGHT;
-            else if (edge == BottomLeft) wParam = SC_SIZE | WMSZ_BOTTOMLEFT;
-            else if (edge == BottomRight) wParam = SC_SIZE | WMSZ_BOTTOMRIGHT;
+            int wParam = 0;
+            if (edge == Left) wParam = HTLEFT;
+            else if (edge == Right) wParam = HTRIGHT;
+            else if (edge == Top) wParam = HTTOP;
+            else if (edge == Bottom) wParam = HTBOTTOM;
+            else if (edge == TopLeft) wParam = HTTOPLEFT;
+            else if (edge == TopRight) wParam = HTTOPRIGHT;
+            else if (edge == BottomLeft) wParam = HTBOTTOMLEFT;
+            else if (edge == BottomRight) wParam = HTBOTTOMRIGHT;
             
             if (wParam != 0) {
-                qDebug() << "Sending WM_SYSCOMMAND with wParam:" << wParam;
-                SendMessage(hwnd, WM_SYSCOMMAND, wParam, 0);
+                qDebug() << "Sending WM_NCLBUTTONDOWN with wParam:" << wParam;
+                SendMessage(hwnd, WM_NCLBUTTONDOWN, wParam, 0);
                 return;
             }
 #endif

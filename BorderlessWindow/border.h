@@ -5,6 +5,7 @@
 #include <QWidget>
 #include <QWindow>
 #include <QMouseEvent>
+#include <QEnterEvent>
 #include <QPainter>
 
 /**
@@ -36,17 +37,22 @@ enum class BorderType
 class Border : public QWidget
 {
     Q_OBJECT
-public:
-    /**
+public:    /**
      * @brief 构造函数
      * @param parent 父窗口指针
      * @param bordertype 边框类型
      */
     explicit Border(QWidget *parent, BorderType bordertype);
+    
+    /**
+     * @brief 获取边框类型
+     * @return 当前边框的类型
+     */
+    BorderType borderType() const { return border_type; }
 
 private:
     BorderType border_type;  ///< 当前边框的类型
-    int border_width = 5;    ///< 边框的宽度(像素)
+    int border_width = 12;   ///< 边框的宽度(像素) - 增加到12px便于拖拽操作
 
 protected:
     /**
@@ -80,5 +86,17 @@ protected:
      * 处理窗口显示事件
      */
     void showEvent(QShowEvent *event) override;
+
+    /**
+     * @brief 鼠标进入事件处理
+     * @param event 鼠标进入事件对象
+     */
+    void enterEvent(QEnterEvent *event) override;
+
+    /**
+     * @brief 鼠标离开事件处理
+     * @param event 鼠标离开事件对象
+     */
+    void leaveEvent(QEvent *event) override;
 };
 #endif // BORDER_H

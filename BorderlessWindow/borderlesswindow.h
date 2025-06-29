@@ -64,25 +64,43 @@ protected:
      * @brief 状态改变事件处理
      * @param event 状态改变事件对象
      *
-     * 处理窗口状态变化（如最大化/最小化/正常状态切换）。
-     */
-    virtual void changeEvent(QEvent *event) override;
-   
+     * 处理窗口状态变化（如最大化/最小化/正常状态切换）。     */    virtual void changeEvent(QEvent *event) override;
+
+    virtual void showEvent(QShowEvent *event);
+    virtual void paintEvent(QPaintEvent *event) override; // 支持背景亚克力效果
+    
+    // 鼠标事件处理 - 用于窗口边缘拖拽
+    virtual void mousePressEvent(QMouseEvent *event) override;
+    virtual void mouseMoveEvent(QMouseEvent *event) override;
+    virtual void mouseReleaseEvent(QMouseEvent *event) override;
+    
+#ifdef Q_OS_WIN
+    virtual bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
+#endif
 
 private:
     QGridLayout *gridLayout = nullptr;       ///< 主网格布局管理器
-
-    /* 八个方向的边框控件 */
-    Border*           left_border          = nullptr;          ///< 左边框控件
-    Border*           left_top_border      = nullptr;          ///< 左上角边框控件
-    Border*           right_top_border     = nullptr;          ///< 右上角边框控件
-    Border*           top_border           = nullptr;          ///< 上边框控件
-    Border*           bottom_border        = nullptr;          ///< 下边框控件
-    Border*           left_bottom_border   = nullptr;          ///< 左下角边框控件
-    Border*           right_border         = nullptr;          ///< 右边框控件
-    Border*           right_bottom_border  = nullptr;          ///< 右下角边框控件
-	/* 主内容区域控件 */
     MainArea*         main_area      = nullptr;                ///< 主内容区域控件
+    
+    // 边缘拖拽相关
+    static const int EDGE_WIDTH = 8;         ///< 边缘拖拽区域宽度
+    bool m_dragging = false;                 ///< 是否正在拖拽
+    QPoint m_dragStartPos;                   ///< 拖拽开始位置
+    
+    // 鼠标位置检测
+    enum EdgeType {
+        None = 0,
+        Left = 1,
+        Right = 2, 
+        Top = 4,
+        Bottom = 8,
+        TopLeft = Top | Left,
+        TopRight = Top | Right,
+        BottomLeft = Bottom | Left,
+        BottomRight = Bottom | Right
+    };
+    
+    EdgeType getEdgeType(const QPoint &pos) const;
 };
 
 #endif // BORDERLESSWINDOW_H
