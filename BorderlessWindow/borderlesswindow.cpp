@@ -1,167 +1,54 @@
 #include "borderlesswindow.h"
+#include "borderlesswindow_p.h"
 #include "mainarea.h"
-#include <QPainter>
 #include <QMouseEvent>
 #include <QApplication>
-#include <QDebug>
-#ifdef Q_OS_WIN
-#include <windows.h>
-#include <dwmapi.h>
-#include <windowsx.h>
-#pragma comment(lib, "dwmapi.lib")
-#pragma comment(lib, "user32.lib")
-#endif
 
 BorderlessWindow::BorderlessWindow(QWidget *parent)
-    : QWidget{parent},
-      gridLayout{new QGridLayout(this)},
-      main_area{new MainArea(this)},
-      m_dragging{false}
+    : QWidget(parent)
+    , d_ptr(new BorderlessWindowPrivate(this))
 {
-    this->setWindowFlags(this->windowFlags() | Qt::WindowType::FramelessWindowHint);
-    this->setAttribute(Qt::WidgetAttribute::WA_TranslucentBackground);
-    this->resize(640, 480);
-    
-    // 启用鼠标追踪
-    this->setMouseTracking(true);
+    Q_D(BorderlessWindow);
+    d->initializeWindow();
+}
 
-    // 简化布局 - 只有主内容区域，留出边缘空间用于拖拽
-    this->gridLayout->setSpacing(0);
-    this->gridLayout->setContentsMargins(EDGE_WIDTH, EDGE_WIDTH, EDGE_WIDTH, EDGE_WIDTH);
-    this->gridLayout->addWidget(this->main_area, 0, 0, 1, 1);
-    
-    qDebug() << "BorderlessWindow created with edge width:" << EDGE_WIDTH;
+BorderlessWindow::~BorderlessWindow()
+{
 }
 
 QWidget *BorderlessWindow::qWidgetUseInSetupUi()
 {
-    return this->main_area->customerAreaWidget();
+    Q_D(BorderlessWindow);
+    return d->mainArea->customerAreaWidget();
 }
 
 void BorderlessWindow::setWindowTitle(const QString &title)
 {
-    this->main_area->titleBar()->setTitle(title);
+    Q_D(BorderlessWindow);
+    d->mainArea->titleBar()->setTitle(title);
 }
 
 void BorderlessWindow::setWindowIcon(const QPixmap &icon)
 {
-    this->main_area->titleBar()->setIcon(icon);
-}
-
-BorderlessWindow::EdgeType BorderlessWindow::getEdgeType(const QPoint &pos) const
-{
-    if (this->isMaximized()) {
-        return None;
-    }
-    
-    QRect rect = this->rect();
-    EdgeType edge = None;
-    
-    // 检测左右边缘
-    if (pos.x() <= EDGE_WIDTH) {
-        edge = static_cast<EdgeType>(edge | Left);
-    } else if (pos.x() >= rect.width() - EDGE_WIDTH) {
-        edge = static_cast<EdgeType>(edge | Right);
-    }
-    
-    // 检测上下边缘
-    if (pos.y() <= EDGE_WIDTH) {
-        edge = static_cast<EdgeType>(edge | Top);
-    } else if (pos.y() >= rect.height() - EDGE_WIDTH) {
-        edge = static_cast<EdgeType>(edge | Bottom);
-    }
-    
-    return edge;
-}
-
-void BorderlessWindow::mousePressEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::LeftButton) {
-        EdgeType edge = getEdgeType(event->pos());
-        qDebug() << "Mouse press at edge type:" << static_cast<int>(edge);
-          if (edge != None) {
-#ifdef Q_OS_WIN
-            // 使用 WM_SYSCOMMAND 启动系统调整大小操作
-            ReleaseCapture();
-            HWND hwnd = reinterpret_cast<HWND>(this->winId());
-            
-            WPARAM wParam = 0;
-            if (edge == Left) wParam = SC_SIZE | WMSZ_LEFT;
-            else if (edge == Right) wParam = SC_SIZE | WMSZ_RIGHT;
-            else if (edge == Top) wParam = SC_SIZE | WMSZ_TOP;
-            else if (edge == Bottom) wParam = SC_SIZE | WMSZ_BOTTOM;
-            else if (edge == TopLeft) wParam = SC_SIZE | WMSZ_TOPLEFT;
-            else if (edge == TopRight) wParam = SC_SIZE | WMSZ_TOPRIGHT;
-            else if (edge == BottomLeft) wParam = SC_SIZE | WMSZ_BOTTOMLEFT;
-            else if (edge == BottomRight) wParam = SC_SIZE | WMSZ_BOTTOMRIGHT;
-            
-            if (wParam != 0) {
-                qDebug() << "Sending WM_SYSCOMMAND with wParam:" << wParam;
-                SendMessage(hwnd, WM_SYSCOMMAND, wParam, 0);
-                return;
-            }
-#endif
-        }
-    }
-    QWidget::mousePressEvent(event);
-}
-
-void BorderlessWindow::mouseMoveEvent(QMouseEvent *event)
-{
-    EdgeType edge = getEdgeType(event->pos());
-    
-    // 设置光标样式
-    Qt::CursorShape cursor = Qt::ArrowCursor;
-    switch (edge) {
-        case Left:
-        case Right:
-            cursor = Qt::SizeHorCursor;
-            break;
-        case Top:
-        case Bottom:
-            cursor = Qt::SizeVerCursor;
-            break;
-        case TopLeft:
-        case BottomRight:
-            cursor = Qt::SizeFDiagCursor;
-            break;
-        case TopRight:
-        case BottomLeft:
-            cursor = Qt::SizeBDiagCursor;
-            break;
-        default:
-            cursor = Qt::ArrowCursor;
-            break;
-    }
-    
-    this->setCursor(cursor);
-    QWidget::mouseMoveEvent(event);
-}
-
-void BorderlessWindow::mouseReleaseEvent(QMouseEvent *event)
-{
-    m_dragging = false;
-    QWidget::mouseReleaseEvent(event);
+    Q_D(BorderlessWindow);
+    d->mainArea->titleBar()->setIcon(icon);
 }
 
 void BorderlessWindow::changeEvent(QEvent *event)
 {
     if (event->type() == QEvent::Type::WindowStateChange)
     {
+        Q_D(BorderlessWindow);
         QWindowStateChangeEvent *stateChangeEvent = static_cast<QWindowStateChangeEvent *>(event);
         // 最大化
         if (this->windowState() & Qt::WindowState::WindowMaximized)
         {
-            emit this->main_area->titleBar()->maximizeButton()->stateChange(MaximizeButton::State::MAXIMIZE);
-            // 最大化时移除边缘空间
-            this->gridLayout->setContentsMargins(0, 0, 0, 0);
+            emit d->mainArea->titleBar()->maximizeButton()->stateChange(MaximizeButton::State::MAXIMIZE);
         }
         // 最大化后还原
         else if (stateChangeEvent->oldState() & Qt::WindowState::WindowMaximized && !(this->windowState() & Qt::WindowState::WindowMaximized))
         {
-            emit this->main_area->titleBar()->maximizeButton()->stateChange(MaximizeButton::State::NORMAL);
-            // 还原时恢复边缘空间
-            this->gridLayout->setContentsMargins(EDGE_WIDTH, EDGE_WIDTH, EDGE_WIDTH, EDGE_WIDTH);
+            emit d->mainArea->titleBar()->maximizeButton()->stateChange(MaximizeButton::State::NORMAL);
         }
     }
     this->update();
@@ -169,49 +56,23 @@ void BorderlessWindow::changeEvent(QEvent *event)
 }
 
 void BorderlessWindow::showEvent(QShowEvent *event) {
+    Q_D(BorderlessWindow);
     QWidget::showEvent(event);
 #ifdef Q_OS_WIN
-    HWND hwnd = reinterpret_cast<HWND>(this->winId());
-    
-    // 设置圆角
-    UINT preference = 2; // DWMWCP_ROUND
-    DwmSetWindowAttribute(hwnd, 33 /*DWMWA_WINDOW_CORNER_PREFERENCE*/, &preference, sizeof(preference));
-    
-    // 启用 DWM 渲染但不设置阴影边距，避免双重边框
-    BOOL shadowEnabled = TRUE;
-    DwmSetWindowAttribute(hwnd, 2 /*DWMWA_NCRENDERING_ENABLED*/, &shadowEnabled, sizeof(shadowEnabled));
+    d->setupWindowAttributes();
 #endif
 }
 
 void BorderlessWindow::paintEvent(QPaintEvent *event) {
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    
-    // 绘制调试边框（可选）
-    if (!this->isMaximized()) {
-        painter.setPen(QPen(QColor(255, 0, 0, 100), 1));
-        painter.drawRect(0, 0, EDGE_WIDTH, this->height()); // 左
-        painter.drawRect(this->width() - EDGE_WIDTH, 0, EDGE_WIDTH, this->height()); // 右
-        painter.drawRect(0, 0, this->width(), EDGE_WIDTH); // 上
-        painter.drawRect(0, this->height() - EDGE_WIDTH, this->width(), EDGE_WIDTH); // 下
-    }
-    
+    // 移除调试边框，保持窗口简洁
     QWidget::paintEvent(event);
 }
 
 #ifdef Q_OS_WIN
 bool BorderlessWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
 {
-    if (eventType == "windows_generic_MSG") {
-        MSG *msg = static_cast<MSG *>(message);
-        
-        if (msg->message == WM_NCHITTEST) {
-            // 让系统处理边缘检测
-            *result = HTCLIENT;
-            return true;
-        }
-    }
-    
-    return QWidget::nativeEvent(eventType, message, result);
+    Q_D(BorderlessWindow);
+    return d->handleNativeEvent(eventType, message, result) || 
+           QWidget::nativeEvent(eventType, message, result);
 }
 #endif

@@ -14,6 +14,7 @@ win32: LIBS += -luser32
 SOURCES += \
     border.cpp \
     borderlesswindow.cpp \
+    borderlesswindow_p.cpp \
     main.cpp \
     mainarea.cpp \
     titlebale/closebutton.cpp \
@@ -28,6 +29,7 @@ SOURCES += \
 HEADERS += \
     border.h \
     borderlesswindow.h \
+    borderlesswindow_p.h \
     mainarea.h \
     titlebale/closebutton.h \
     titlebale/colormanagement.h \
