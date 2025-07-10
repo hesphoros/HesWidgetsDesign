@@ -30,6 +30,12 @@ Q_ENUM_END(HesApplicationType)
 // HesThemeType
 //---------------------------------------------------------------------------
 Q_ENUM_BEGIN(HesThemeType)
+    
+    /**
+     * @brief 主题类型
+     * @enum HesThemeType::ThemeMode
+     * @details 主题模式枚举
+     */
     enum ThemeMode
     {
         Light = 0x0000,  /*!< Light */
