@@ -1,0 +1,33 @@
+cmake_minimum_required(VERSION 3.5)
+
+project(HesWidgetsDesign VERSION 1.0 LANGUAGES CXX)
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
+FILE(GLOB ORIGIN *.h *.cpp)
+FILE(GLOB INCLUDE include/*.h)
+FILE(GLOB INCLUDE_COMMON include/common/*.h)
+FILE(GLOB PRIVATE private/*.h private/*.cpp)
+#FILE(GLOB DEVELOPER DeveloperComponents/*.h DeveloperComponents/*.cpp)
+
+source_group(include FILES ${INCLUDE})
+source_group(private FILES ${PRIVATE})
+#source_group(DeveloperComponents FILES ${DEVELOPER})
+
+set(PROJECT_SOURCES
+    ${ORIGIN}
+    ${INCLUDE}
+    ${PRIVATE}
+    ${INCLUDE_COMMON}
+#    ${DEVELOPER}
+#    ${CMAKE_CURRENT_SOURCE_DIR}/include/ElaWidgetTools.qrc
+)
+
+include_directories(include)
