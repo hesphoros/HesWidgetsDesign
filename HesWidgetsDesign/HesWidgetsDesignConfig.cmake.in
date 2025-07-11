@@ -1,0 +1,27 @@
+# HesWidgetsDesignConfig.cmake.in
+# HesWidgetsDesign CMake 配置文件
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# 查找依赖的包
+find_dependency(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Widgets Gui)
+find_dependency(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets Gui)
+
+# 包含导出的目标
+include("${CMAKE_CURRENT_LIST_DIR}/HesWidgetsDesignTargets.cmake")
+
+# 检查组件
+check_required_components(HesWidgetsDesign)
+
+# 设置变量
+set(HesWidgetsDesign_VERSION @PROJECT_VERSION@)
+set(HesWidgetsDesign_VERSION_MAJOR @PROJECT_VERSION_MAJOR@)
+set(HesWidgetsDesign_VERSION_MINOR @PROJECT_VERSION_MINOR@)
+set(HesWidgetsDesign_VERSION_PATCH @PROJECT_VERSION_PATCH@)
+
+# 提供信息消息
+if(NOT HesWidgetsDesign_FIND_QUIETLY)
+    message(STATUS "Found HesWidgetsDesign: ${HesWidgetsDesign_VERSION}")
+endif()

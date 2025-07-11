@@ -1,93 +1,210 @@
-cmake_minimum_required(VERSION 3.16)
+# ============================================================================
+# HesWidgetsDesign 库项目配置
+# ============================================================================
 
-project(HesWidgetsDesign VERSION 1.0.0 LANGUAGES CXX)
+project(HesWidgetsDesign LANGUAGES CXX)
 
-# 设置 C++ 标准
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# ============================================================================
+# 源文件收集
+# ============================================================================
 
-# 设置 Qt 自动化工具
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-
-# 设置编译选项
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-
-# 收集源文件
-file(GLOB_RECURSE HEADERS 
-    "include/*.h"
-    "include/common/*.h"
-    "include/Image/*.h"
+# 公共头文件
+set(PUBLIC_HEADERS
+    include/HesApplication.h
+    include/HesTheme.h
+    include/HesWinShadowHelper.h
+    include/Singleton.h
+    include/stdafx.h
+    include/common/common_defs.h
+    include/common/common_utils.h
+    include/common/common_color_macros.h
 )
 
-file(GLOB_RECURSE SOURCES 
-    "src/*.cpp"
-    "private/*.cpp"
+# 私有头文件
+set(PRIVATE_HEADERS
+    private/HesApplicationPrivate.h
+    private/HesThemePrivate.h
 )
 
-# 组织源文件分组（用于 Visual Studio 项目）
-source_group("Header Files" FILES ${HEADERS})
+# 开发组件头文件
+set(DEVELOPER_HEADERS
+    DeveloperComponents/HesWinShadowHelper.h
+)
+
+# 源文件
+set(SOURCES
+    src/HesApplication.cpp
+    src/HesTheme.cpp
+    src/HesWinShadowHelper.cpp
+    private/HesApplicationPrivate.cpp
+    private/HesThemePrivate.cpp
+)
+
+# 平台特定源文件
+if(WIN32)
+    list(APPEND SOURCES
+        DeveloperComponents/HesWinShadowHelper.cpp
+    )
+endif()
+
+# 所有头文件（用于IDE项目组织）
+set(ALL_HEADERS
+    ${PUBLIC_HEADERS}
+    ${PRIVATE_HEADERS}
+    ${DEVELOPER_HEADERS}
+)
+
+# ============================================================================
+# Visual Studio 项目文件组织
+# ============================================================================
+source_group("Public Headers" FILES ${PUBLIC_HEADERS})
+source_group("Private Headers" FILES ${PRIVATE_HEADERS})
+source_group("Developer Components Headers" FILES ${DEVELOPER_HEADERS})
 source_group("Source Files" FILES ${SOURCES})
+source_group("Common Headers" FILES 
+    include/common/common_defs.h
+    include/common/common_utils.h
+    include/common/common_color_macros.h
+)
 
-# 设置项目源文件
-set(PROJECT_SOURCES
-    ${HEADERS}
+# ============================================================================
+# 创建共享库
+# ============================================================================
+add_library(${PROJECT_NAME} SHARED 
+    ${ALL_HEADERS}
     ${SOURCES}
 )
 
-# 包含目录
-include_directories(include)
-include_directories(include/common)
-include_directories(include/Image)
-include_directories(private)
-
-# 创建动态库
-add_library(${PROJECT_NAME} SHARED ${PROJECT_SOURCES})
-
-# 链接 Qt 库
-target_link_libraries(${PROJECT_NAME} 
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Gui
-    Qt${QT_VERSION_MAJOR}::Network
-    Qt${QT_VERSION_MAJOR}::Sql
-    Qt${QT_VERSION_MAJOR}::Xml
-    Qt${QT_VERSION_MAJOR}::Concurrent
-    Qt${QT_VERSION_MAJOR}::Multimedia
+# ============================================================================
+# 包含目录配置
+# ============================================================================
+target_include_directories(${PROJECT_NAME} 
+    PUBLIC 
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/common>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/private
+        ${CMAKE_CURRENT_SOURCE_DIR}/DeveloperComponents
 )
 
-# 设置目标属性
+# ============================================================================
+# 链接库配置
+# ============================================================================
+target_link_libraries(${PROJECT_NAME} 
+    PUBLIC
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Widgets
+        Qt${QT_VERSION_MAJOR}::Gui
+    PRIVATE
+        Qt${QT_VERSION_MAJOR}::Network
+        Qt${QT_VERSION_MAJOR}::Sql
+        Qt${QT_VERSION_MAJOR}::Xml
+        Qt${QT_VERSION_MAJOR}::Concurrent
+        Qt${QT_VERSION_MAJOR}::Multimedia
+)
+
+# Windows 特定库链接
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} 
+        PRIVATE
+            ${DWMAPI_LIB}
+            ${USER32_LIB}
+            ${KERNEL32_LIB}
+            ${NTDLL_LIB}
+    )
+endif()
+
+# ============================================================================
+# 编译定义
+# ============================================================================
+target_compile_definitions(${PROJECT_NAME} 
+    PRIVATE 
+        HESWIDGETSDESIGN_LIBRARY      # 导出库符号
+        QT_DEPRECATED_WARNINGS        # Qt 过时警告
+        QT_DISABLE_DEPRECATED_BEFORE=0x060000  # 禁用 Qt 6.0 之前的过时 API
+)
+
+# Windows 特定定义
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} 
+        PRIVATE
+            _WINDOWS
+            _UNICODE
+            UNICODE
+    )
+endif()
+
+# ============================================================================
+# 目标属性设置
+# ============================================================================
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    WIN32_EXECUTABLE TRUE
-    MACOSX_BUNDLE TRUE
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
-)
-
-# 定义预处理器宏
-target_compile_definitions(${PROJECT_NAME} PRIVATE 
-    HES_EXPORT_LIBRARY
-    QT_DEPRECATED_WARNINGS
-)
-
-# 设置输出目录
-set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_EXTENSIONS OFF
+    POSITION_INDEPENDENT_CODE ON
+    
+    # 输出目录
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib  
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+    
+    # Windows 特定属性
+    WIN32_EXECUTABLE FALSE
+    
+    # 调试信息
+    DEBUG_POSTFIX "d"
 )
 
-# 安装规则
+# ============================================================================
+# 安装配置
+# ============================================================================
+
+# 安装库文件
 install(TARGETS ${PROJECT_NAME}
-    BUNDLE DESTINATION .
+    EXPORT HesWidgetsDesignTargets
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
+    INCLUDES DESTINATION include
 )
 
-# 安装头文件
+# 安装公共头文件
 install(DIRECTORY include/ 
     DESTINATION include
     FILES_MATCHING PATTERN "*.h"
+    PATTERN "private" EXCLUDE
+)
+
+# 安装 CMake 配置文件
+install(EXPORT HesWidgetsDesignTargets
+    FILE HesWidgetsDesignTargets.cmake
+    NAMESPACE HesWidgetsDesign::
+    DESTINATION lib/cmake/HesWidgetsDesign
+)
+
+# 创建配置文件
+include(CMakePackageConfigHelpers)
+
+# 配置包配置文件
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/HesWidgetsDesignConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/HesWidgetsDesignConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/HesWidgetsDesign
+    PATH_VARS CMAKE_INSTALL_PREFIX
+)
+
+write_basic_package_version_file(
+    "HesWidgetsDesignConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+# 安装配置文件
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/HesWidgetsDesignConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/HesWidgetsDesignConfigVersion.cmake"
+    DESTINATION lib/cmake/HesWidgetsDesign
 )

@@ -1,53 +1,188 @@
-cmake_minimum_required(VERSION 3.16)
+# ============================================================================
+# HesWidgetsDesignExample 示例应用程序配置
+# ============================================================================
 
-project(HesWidgetsDesignExample VERSION 1.0.0 LANGUAGES CXX)
+project(HesWidgetsDesignExample LANGUAGES CXX)
 
-# 设置 C++ 标准
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# ============================================================================
+# 源文件收集
+# ============================================================================
 
-# 设置 Qt 自动化工具
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
+# 自动收集所有源文件
+file(GLOB_RECURSE EXAMPLE_HEADERS "*.h")
+file(GLOB_RECURSE EXAMPLE_SOURCES "*.cpp")
+file(GLOB_RECURSE EXAMPLE_UI_FILES "*.ui")
+file(GLOB_RECURSE EXAMPLE_QRC_FILES "*.qrc")
 
-# 设置编译选项
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+# 检查是否有源文件，如果没有则创建一个默认的 main.cpp
+if(NOT EXAMPLE_SOURCES)
+    message(STATUS "No source files found in Example project, creating default main.cpp")
+    set(DEFAULT_MAIN_CONTENT
+"#include <QApplication>
+#include <QWidget>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include \"HesApplication.h\"
 
-# 收集源文件
-file(GLOB_RECURSE HEADERS "*.h")
-file(GLOB_RECURSE SOURCES "*.cpp")
-file(GLOB_RECURSE UI_FILES "*.ui")
-file(GLOB_RECURSE QRC_FILES "*.qrc")
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+    
+    // 初始化 HesApplication
+    HesApplication::getInstance();
+    
+    // 创建主窗口
+    QWidget window;
+    window.setWindowTitle(\"HesWidgetsDesign Example\");
+    window.resize(800, 600);
+    
+    QVBoxLayout* layout = new QVBoxLayout(&window);
+    
+    QLabel* label = new QLabel(\"欢迎使用 HesWidgetsDesign!\");
+    label->setAlignment(Qt::AlignCenter);
+    
+    QPushButton* button = new QPushButton(\"测试按钮\");
+    
+    layout->addWidget(label);
+    layout->addWidget(button);
+    
+    window.show();
+    
+    return app.exec();
+}
+")
+    
+    # 创建默认的 main.cpp 文件
+    file(WRITE "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp" "${DEFAULT_MAIN_CONTENT}")
+    set(EXAMPLE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
+endif()
 
-# 设置项目源文件
-set(PROJECT_SOURCES
-    ${HEADERS}
-    ${SOURCES}
-    ${UI_FILES}
-    ${QRC_FILES}
+# 所有项目文件
+set(EXAMPLE_ALL_FILES
+    ${EXAMPLE_HEADERS}
+    ${EXAMPLE_SOURCES}
+    ${EXAMPLE_UI_FILES}
+    ${EXAMPLE_QRC_FILES}
 )
 
-# 包含目录
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/HesWidgetsDesign/include)
+# ============================================================================
+# Visual Studio 项目文件组织
+# ============================================================================
+source_group("Header Files" FILES ${EXAMPLE_HEADERS})
+source_group("Source Files" FILES ${EXAMPLE_SOURCES})
+source_group("UI Files" FILES ${EXAMPLE_UI_FILES})
+source_group("Resource Files" FILES ${EXAMPLE_QRC_FILES})
 
+# ============================================================================
 # 创建可执行文件
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
+# ============================================================================
+add_executable(${PROJECT_NAME} ${EXAMPLE_ALL_FILES})
 
-# 链接库
-target_link_libraries(${PROJECT_NAME} 
-    Qt${QT_VERSION_MAJOR}::Core
-    Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Gui
-    HesWidgetsDesign
+# ============================================================================
+# 包含目录配置
+# ============================================================================
+target_include_directories(${PROJECT_NAME} 
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_SOURCE_DIR}/HesWidgetsDesign/include
+        ${CMAKE_SOURCE_DIR}/HesWidgetsDesign/include/common
 )
 
-# 设置目标属性
+# ============================================================================
+# 链接库配置
+# ============================================================================
+target_link_libraries(${PROJECT_NAME} 
+    PRIVATE
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Widgets
+        Qt${QT_VERSION_MAJOR}::Gui
+        HesWidgetsDesign
+)
+
+# ============================================================================
+# 编译定义
+# ============================================================================
+target_compile_definitions(${PROJECT_NAME} 
+    PRIVATE
+        QT_DEPRECATED_WARNINGS
+        QT_DISABLE_DEPRECATED_BEFORE=0x060000
+)
+
+# Windows 特定定义
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} 
+        PRIVATE
+            _WINDOWS
+            _UNICODE
+            UNICODE
+    )
+endif()
+
+# ============================================================================
+# 目标属性设置
+# ============================================================================
 set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+    
+    # 输出目录
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    
+    # 平台特定属性
     WIN32_EXECUTABLE TRUE
     MACOSX_BUNDLE TRUE
-    CXX_STANDARD 17
+    
+    # 调试信息
+    DEBUG_POSTFIX "d"
+)
+
+# ============================================================================
+# 部署配置（Windows）
+# ============================================================================
+if(WIN32 AND QT_VERSION_MAJOR EQUAL 6)
+    # 查找 Qt 部署工具
+    find_program(QT_DEPLOY_TOOL
+        NAMES windeployqt
+        PATHS ${QT_SDK_DIR}/bin
+        NO_DEFAULT_PATH
+    )
+    
+    if(QT_DEPLOY_TOOL)
+        message(STATUS "Found Qt deploy tool: ${QT_DEPLOY_TOOL}")
+        
+        # 添加部署目标
+        add_custom_target(deploy_example
+            COMMAND ${QT_DEPLOY_TOOL} $<TARGET_FILE:${PROJECT_NAME}>
+            DEPENDS ${PROJECT_NAME}
+            COMMENT "Deploying Qt libraries for ${PROJECT_NAME}"
+        )
+    else()
+        message(WARNING "Qt deploy tool not found. Manual deployment may be required.")
+    endif()
+endif()
+
+# ============================================================================
+# 安装配置
+# ============================================================================
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+    BUNDLE DESTINATION .
+)
+
+# 安装示例源代码
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION examples/HesWidgetsDesignExample
+    FILES_MATCHING 
+        PATTERN "*.cpp"
+        PATTERN "*.h"
+        PATTERN "*.ui"
+        PATTERN "*.qrc"
+        PATTERN "*.txt"
+    PATTERN "CMakeFiles" EXCLUDE
+    PATTERN "build" EXCLUDE
+)
     CXX_STANDARD_REQUIRED ON
 )
 
