@@ -14,7 +14,7 @@ class HesApplicationPrivate : public QObject
     Q_OBJECT
     Q_D_DECLARE_POINTER(HesApplication)
     Q_PROPERTY_CREATE_PRIVATE(HesApplicationType::WindowDisplayMode, WindowDisplayMode)
-    Q_PROPERTY_CREATE_PRIVATE(QString, MicaImagePath)
+    Q_PROPERTY_CREATE_PRIVATE(QString, HesMicaImagePath)
 public:
     explicit HesApplicationPrivate(QObject* parent = nullptr);
     ~HesApplicationPrivate() override;

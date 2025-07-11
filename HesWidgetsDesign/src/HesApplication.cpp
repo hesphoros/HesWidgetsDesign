@@ -1,7 +1,7 @@
 #include "HesApplication.h"
 
-// #include "HesTheme.h"
-// #include "HesWinShadowHelper.h"
+#include "HesTheme.h"
+#include "HesWinShadowHelper.h"
 #include "private/HesApplicationPrivate.h"
 
 #include <QApplication>
@@ -19,8 +19,8 @@ HesApplication::HesApplication(QObject* parent)
     d->q_ptr = this;
     d->_pHesMicaImagePath = ":/include/Image/MicaBase.png";
     d->_pWindowDisplayMode = HesApplicationType::Normal;
-    d->_themeMode = eTheme->getThemeMode();
-    connect(eTheme, &HesTheme::themeModeChanged, d, &HesApplicationPrivate::onThemeModeChanged);
+    d->_themeMode = hesTheme->getThemeMode();
+    connect(hesTheme, &HesTheme::themeModeChanged, d, &HesApplicationPrivate::onThemeModeChanged);
 }
 
 HesApplication::~HesApplication()
@@ -45,7 +45,7 @@ void HesApplication::setWindowDisplayMode(HesApplicationType::WindowDisplayMode 
     case HesApplicationType::HesMica:
     {
         d->_pWindowDisplayMode = windowDisplayType;
-        d->_initMicaBaseImage(QImage(d->_pElaMicaImagePath));
+        d->_initMicaBaseImage(QImage(d->_pHesMicaImagePath));
         break;
     }
     default:
@@ -68,11 +68,12 @@ void HesApplication::setWindowDisplayMode(HesApplicationType::WindowDisplayMode 
 }
 
 
-HesApplication::WindowDisplayMode HesApplication::getWindowDisplayMode() const
+HesApplicationType::WindowDisplayMode HesApplication::getWindowDisplayMode() const
 {
     Q_D(const HesApplication);
     return d->_pWindowDisplayMode;
 }
+
 
 void HesApplication::setHesMicaImagePath(QString micaImagePath)
 {

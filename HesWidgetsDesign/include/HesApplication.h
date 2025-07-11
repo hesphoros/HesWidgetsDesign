@@ -20,7 +20,7 @@ class HES_EXPORT HesApplication : public QObject
 
     Q_PROPERTY_DEFINE_MEMBER_H(HesApplicationType::WindowDisplayMode, WindowDisplayMode)
     // Mica Image Path
-    Q_PROPERTY_DEFINE_MEMBER_H(QString, MicaImagePath)
+    Q_PROPERTY_DEFINE_MEMBER_H(QString, HesMicaImagePath)
 private:
     explicit HesApplication(QObject* parent = nullptr);
     ~HesApplication() override;
