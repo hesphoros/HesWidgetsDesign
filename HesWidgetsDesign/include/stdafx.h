@@ -15,36 +15,29 @@
 // 枚举类导出 兼容 QT5 低版本
 /**
  * @brief 如果Qt版本大于等于5.14.0，
- * 
  */
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-#define Q_ENUM_BEGIN(CLASS)                                                        \
-    namespace CLASS {                                                              \
+#define Q_ENUM_BEGIN(CLASS) \
+    namespace CLASS { \
     Q_NAMESPACE_EXPORT(HES_EXPORT)
 
 #define Q_ENUM_END(CLASS) }
 
 #define Q_ENUM_REGISTER(CLASS) Q_ENUM_NS(CLASS)
 #else
-#define Q_ENUM_BEGIN(CLASS)                                                        \
-    class HES_EXPORT CLASS : public QObject                                        \
-    {                                                                              \
-        Q_OBJECT                                                                   \
+#define Q_ENUM_BEGIN(CLASS) \
+    class HES_EXPORT CLASS : public QObject \
+    { \
+        Q_OBJECT \
     public:
 
-#define Q_ENUM_END(CLASS)                                                          \
-private:                                                                           \
-    Q_DISABLE_COPY(CLASS)                                                          \
-    }                                                                              \
-    ;
+#define Q_ENUM_END(CLASS) \
+    private: \
+        Q_DISABLE_COPY(CLASS) \
+    }; 
 
 #define Q_ENUM_REGISTER(CLASS) Q_ENUM(CLASS)
 #endif
-
-
-
-
-
 
 /**
  * @brief Q_DECLARE_PIMPL
@@ -65,13 +58,12 @@ private:                                                                        
  * @details header文件中使用时，通常用于声明一个属性，
  *          以及对应的 getter 和 setter 方法。
  */
-#define Q_PROPERTY_DEFINE_MEMBER_H(Type,M)                                         \
+#define Q_PROPERTY_DEFINE_MEMBER_H(TYPE, M)                                        \
     Q_PROPERTY(TYPE p##M READ get##M WRITE set##M NOTIFY p##M##Changed)            \
-    public:                                                                        \
-        Q_SIGNAL void p##M##Changed();                                             \
-        void set##M(TYPE M);                                                       \
-        TYPE get##M() const;                                                       \
-
+public:                                                                            \
+    Q_SIGNAL void p##M##Changed();                                                 \
+    void set##M(TYPE M);                                                           \
+    TYPE get##M() const;
 
 /**
  * @brief Q_PROPERTY_DEFINE_MEMBER_CPP

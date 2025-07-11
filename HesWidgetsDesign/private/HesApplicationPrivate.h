@@ -32,7 +32,7 @@ private:
     QImage                  _darkBaseImage;
     
 private:    
-    friend class ElaMicaBaseInitObject;
+    friend class HesMicaBaseInitObject;
     void    _initMicaBaseImage(QImage img);
     QRect   _calculateWindowVirtualGeometry(QWidget* widget);
     void    _updateMica(QWidget* widget, bool isProcessEvent = true);

@@ -6,7 +6,7 @@
 #include "common/common_defs.h"
 #include "Singleton.h"
 
-#define HesAPP HesApplication::getInstance()
+#define hesApp HesApplication::getInstance()
 
 class HesApplicationPrivate;
 

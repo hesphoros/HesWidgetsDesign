@@ -56,7 +56,7 @@ void HesTheme::drawEffectShadow(QPainter* painter, QRect widgetRect, int shadowB
     painter->restore();
 }
 
-void HesTheme::setThemeColor(HesThemeType::ThemeMode themeMode,HesThemeType::ThemeColor themeColor, const QColor& newColor)
+void HesTheme::setThemeColor(HesThemeType::ThemeMode themeMode,HesThemeType::ThemeColor themeColor,  QColor newColor)
 {
     Q_D(HesTheme);
     if (themeMode == HesThemeType::Light) {

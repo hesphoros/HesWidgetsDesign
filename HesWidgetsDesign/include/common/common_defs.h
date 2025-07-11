@@ -1,7 +1,8 @@
 #ifndef COMMON_DEFS_H
 #define COMMON_DEFS_H
 
-#include "../stdafx.h"
+#include "stdafx.h"
+
 
 
 //---------------------------------------------------------------------------

@@ -5,46 +5,39 @@
 project(HesWidgetsDesign LANGUAGES CXX)
 
 # ============================================================================
-# 源文件收集
+# 源文件收集 - 自动扫描
 # ============================================================================
 
-# 公共头文件
-set(PUBLIC_HEADERS
-    include/HesApplication.h
-    include/HesTheme.h
-    include/HesWinShadowHelper.h
-    include/Singleton.h
-    include/stdafx.h
-    include/common/common_defs.h
-    include/common/common_utils.h
-    include/common/common_color_macros.h
+# 自动收集公共头文件
+file(GLOB_RECURSE PUBLIC_HEADERS 
+    "include/*.h"
 )
 
-# 私有头文件
-set(PRIVATE_HEADERS
-    private/HesApplicationPrivate.h
-    private/HesThemePrivate.h
+# 自动收集私有头文件
+file(GLOB_RECURSE PRIVATE_HEADERS 
+    "private/*.h"
 )
 
-# 开发组件头文件
-set(DEVELOPER_HEADERS
-    DeveloperComponents/HesWinShadowHelper.h
+# 自动收集开发组件头文件
+file(GLOB_RECURSE DEVELOPER_HEADERS 
+    "DeveloperComponents/*.h"
 )
 
-# 源文件
-set(SOURCES
-    src/HesApplication.cpp
-    src/HesTheme.cpp
-    src/HesWinShadowHelper.cpp
-    private/HesApplicationPrivate.cpp
-    private/HesThemePrivate.cpp
+# 自动收集源文件
+file(GLOB_RECURSE SOURCES 
+    "src/*.cpp" 
+    "src/*.c"
+    "private/*.cpp" 
+    "private/*.c"
 )
 
 # 平台特定源文件
 if(WIN32)
-    list(APPEND SOURCES
-        DeveloperComponents/HesWinShadowHelper.cpp
+    file(GLOB_RECURSE WIN_SOURCES 
+        "DeveloperComponents/*.cpp" 
+        "DeveloperComponents/*.c"
     )
+    list(APPEND SOURCES ${WIN_SOURCES})
 endif()
 
 # 所有头文件（用于IDE项目组织）
@@ -61,11 +54,20 @@ source_group("Public Headers" FILES ${PUBLIC_HEADERS})
 source_group("Private Headers" FILES ${PRIVATE_HEADERS})
 source_group("Developer Components Headers" FILES ${DEVELOPER_HEADERS})
 source_group("Source Files" FILES ${SOURCES})
-source_group("Common Headers" FILES 
-    include/common/common_defs.h
-    include/common/common_utils.h
-    include/common/common_color_macros.h
-)
+
+# 为include/common下的文件创建子分组
+file(GLOB COMMON_HEADERS "include/common/*.h")
+source_group("Public Headers/Common" FILES ${COMMON_HEADERS})
+
+# 为include/Font和Image创建子分组（如果存在）
+file(GLOB FONT_HEADERS "include/Font/*.h")
+file(GLOB IMAGE_HEADERS "include/Image/*.h")
+if(FONT_HEADERS)
+    source_group("Public Headers/Font" FILES ${FONT_HEADERS})
+endif()
+if(IMAGE_HEADERS)
+    source_group("Public Headers/Image" FILES ${IMAGE_HEADERS})
+endif()
 
 # ============================================================================
 # 创建共享库
@@ -82,10 +84,11 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC 
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/common>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/DeveloperComponents>
         $<INSTALL_INTERFACE:include>
+        $<INSTALL_INTERFACE:include/DeveloperComponents>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/private
-        ${CMAKE_CURRENT_SOURCE_DIR}/DeveloperComponents
 )
 
 # ============================================================================
@@ -176,6 +179,12 @@ install(DIRECTORY include/
     DESTINATION include
     FILES_MATCHING PATTERN "*.h"
     PATTERN "private" EXCLUDE
+)
+
+# 安装 DeveloperComponents 头文件
+install(DIRECTORY DeveloperComponents/
+    DESTINATION include/DeveloperComponents
+    FILES_MATCHING PATTERN "*.h"
 )
 
 # 安装 CMake 配置文件

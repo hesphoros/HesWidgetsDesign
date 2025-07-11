@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include "common/common_defs.h"
-#include "Signgelton.h"
+#include "Singleton.h"
 
 #define hesTheme HesTheme::getInstance()
 class QPainter;

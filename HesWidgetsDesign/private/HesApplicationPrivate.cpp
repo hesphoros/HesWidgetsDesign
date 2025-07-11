@@ -10,9 +10,9 @@
 #include <QtMath>
 
 
-// #include "ElaApplication.h"
-// #include "ElaMicaBaseInitObject.h"
-// #include "ElaWinShadowHelper.h"
+#include "HesApplication.h"
+#include "HesMicaBaseInitObject.h"
+#include "../DeveloperComponents/HesWinShadowHelper.h"
 
 HesApplicationPrivate::HesApplicationPrivate(QObject* parent): QObject{parent} { }
 
@@ -74,7 +74,7 @@ bool HesApplicationPrivate::eventFilter(QObject* watched, QEvent* event)
         
         case QEvent::Resize:
         {
-            if (_pWindowDisplayMode == ElaApplicationType::WindowDisplayMode::ElaMica) {
+            if (_pWindowDisplayMode == HesApplicationType::WindowDisplayMode::HesMica) {
                 QWidget* widget = qobject_cast<QWidget*>(watched);
                 if (widget) {
                     _updateMica(widget);
@@ -130,9 +130,9 @@ QRect HesApplicationPrivate::_calculateWindowVirtualGeometry(QWidget* widget)
     QRect geometry = widget->geometry();
     qreal xImageRatio = 1, yImageRatio = 1;
     QRect relativeGeometry;
-    if (HesApp->screens().count() > 1)
+    if (qApp->screens().count() > 1)
     {
-        QScreen* currentScreen = HesApp->screenAt(geometry.topLeft());
+        QScreen* currentScreen = qApp->screenAt(geometry.topLeft());
         if (currentScreen)
         {
             QRect screenGeometry = currentScreen->availableGeometry();
@@ -142,7 +142,7 @@ QRect HesApplicationPrivate::_calculateWindowVirtualGeometry(QWidget* widget)
             return relativeGeometry;
         }
     }
-    QRect primaryScreenGeometry = HesApp->primaryScreen()->availableGeometry();
+    QRect primaryScreenGeometry = qApp->primaryScreen()->availableGeometry();
     xImageRatio = (qreal)_lightBaseImage.width() / primaryScreenGeometry.width();
     yImageRatio = (qreal)_lightBaseImage.height() / primaryScreenGeometry.height();
     relativeGeometry = QRect((geometry.x() - primaryScreenGeometry.x()) * xImageRatio, (geometry.y() - primaryScreenGeometry.y()) * yImageRatio, geometry.width() * xImageRatio, geometry.height() * yImageRatio);
@@ -172,7 +172,7 @@ void HesApplicationPrivate::_updateMica(QWidget* widget, bool isProcessEvent)
 
 void HesApplicationPrivate::_updateAllMicaWidget()
 {
-    if (_pWindowDisplayMode == HesApplicationType::WindowDisplayMode::ElaMica)
+    if (_pWindowDisplayMode == HesApplicationType::WindowDisplayMode::HesMica)
     {
         for (auto widget: _micaWidgetList)
         {
