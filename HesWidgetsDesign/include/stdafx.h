@@ -16,16 +16,16 @@
  * @details 此宏用于在类中声明一个私有的实现类（PIMPL），
  *          以实现封装和隐藏实现细节的目的。
  */
-#define Q_DECLARE_PIMPL(ClassName)                                                 \
+#define Q_DECLARE_PIMPL(CLASS)                                                     \
     protected:                                                                     \
-        explicit ClassName(ClassName##Private &dd,ClassName* parent = nullptr);    \
-        QScopedPointer<ClassName##Private> d_ptr;                                  \
+        explicit CLASS(CLASS##Private &dd,CLASS* parent = nullptr);                \
+        QScopedPointer<CLASS##Private> d_ptr;                                      \
     private:                                                                       \
-        Q_DISABLE_COPY(ClassName)                                                  \
-        Q_DECLARE_PRIVATE(ClassName)
+        Q_DISABLE_COPY(CLASS)                                                      \
+        Q_DECLARE_PRIVATE(CLASS)
 
 /**
- * @brief Q_PROPERTY_DEFINE_MEMBER_H
+ * @brief Q_PROPERTY_DEFINE_MEMBER_H Q_D Q_Q普通属性快速创建
  * @details 此宏用于在类中定义一个属性及其相关的 getter、setter 和通知信号。
  * @details header文件中使用时，通常用于声明一个属性，
  *          以及对应的 getter 和 setter 方法。

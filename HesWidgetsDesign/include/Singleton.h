@@ -43,25 +43,25 @@ T* Singleton<T>::getInstance()
 }
 
 
-#define HES_SINGLETON_CREATE(ClassName)                 \
+#define HES_SINGLETON_CREATE(Class)                     \
 private:                                                \
-    friend class Singleton<ClassName>;                  \
+    friend class Singleton<Class>;                      \
                                                         \
 public:                                                 \
-    static ClassName* getInstance()                     \
+    static Class* getInstance()                         \
     {                                                   \
-        return Singleton<ClassName>::getInstance();     \
+        return Singleton<Class>::getInstance();         \
     }
 
 
 // singleton类的创建宏
 // 这个宏用于在类定义中声明单例模式        
-#define HES_SINGLETON_CREATE_H(ClassName)               \
+#define HES_SINGLETON_CREATE_H(Class)                   \
 private:                                                \
-    static ClassName* _instance;                        \
+    static Class* _instance;                            \
                                                         \
 public:                                                 \
-    static ClassName* getInstance();
+    static Class* getInstance();
 
 
 #define HES_SINGLETON_CREATE_CPP(Class)                 \
@@ -76,6 +76,7 @@ public:                                                 \
         }                                               \
         return _instance;                               \
     }
+
 
 
 #endif // !HESSINGLETON_H
