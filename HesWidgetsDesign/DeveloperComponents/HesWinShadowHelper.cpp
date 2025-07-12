@@ -1,6 +1,6 @@
 #include "HesWinShadowHelper.h"
 #include <iostream>
-#ifndef Q_OS_WIN
+#ifdef Q_OS_WIN
 
 #include <QDebug>
 #include <QWidget>
@@ -30,8 +30,7 @@ HesWinShadowHelper::HesWinShadowHelper(QObject* parent)
 
 
 HesWinShadowHelper::~HesWinShadowHelper(){
-    // destructure
-
+    
 }
 
 /**
@@ -71,10 +70,9 @@ bool HesWinShadowHelper::initDWMAPI() {
                 GetProcAddress(dwmModule, "DwmEnableBlurBehindWindow"));
         }
 
-        if ( !( _dwmExtendFrameIntoClientArea && _dwmSetWindowAttribute && 
-                _dwmIsCompositionEnabled && _dwmEnableBlurBehindWindow ) ) {
-            
-            qCritical() << "Failed to load one or more DWM API functions.";
+        if (!(_dwmExtendFrameIntoClientArea && _dwmSetWindowAttribute && _dwmIsCompositionEnabled && _dwmEnableBlurBehindWindow))
+        {
+            qCritical() << "Dwm Func Init Fail!";
             return false;
         }
 

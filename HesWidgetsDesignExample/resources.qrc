@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/icons">
+        <!-- 这里可以添加图标资源 -->
+    </qresource>
+    <qresource prefix="/images">
+        <!-- 这里可以添加图片资源 -->
+    </qresource>
+</RCC>

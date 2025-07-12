@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
 
+# CMake 策略设置
+if(POLICY CMP0074)
+    cmake_policy(SET CMP0074 NEW)
+endif()
+if(POLICY CMP0077)
+    cmake_policy(SET CMP0077 NEW)
+endif()
+
 project(HesWidgetsDesign VERSION 1.0.0 LANGUAGES CXX)
 
 # ============================================================================
@@ -46,6 +54,9 @@ endif()
 set(CMAKE_PREFIX_PATH ${QT_SDK_DIR})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/Install CACHE PATH "Installation path" FORCE)
 
+# 包含自定义的Vulkan禁用脚本
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DisableVulkan.cmake)
+
 # 查找 Qt 包
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS 
@@ -64,12 +75,6 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS
 # 平台特定配置
 # ============================================================================
 if(WIN32)
-    # Windows 特定的库
-    find_library(DWMAPI_LIB dwmapi REQUIRED)
-    find_library(USER32_LIB user32 REQUIRED)
-    find_library(KERNEL32_LIB kernel32 REQUIRED)
-    find_library(NTDLL_LIB ntdll REQUIRED)
-    
     # Windows 特定的编译定义
     add_compile_definitions(
         _WINDOWS
@@ -105,7 +110,6 @@ message(STATUS "Qt SDK directory: ${QT_SDK_DIR}")
 message(STATUS "Install prefix: ${CMAKE_INSTALL_PREFIX}")
 if(WIN32)
     message(STATUS "Target platform: Windows")
-    message(STATUS "DWMAPI library: ${DWMAPI_LIB}")
 endif()
 message(STATUS "===============================================")
 

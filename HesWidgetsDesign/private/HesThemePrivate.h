@@ -10,7 +10,7 @@
 #include "stdafx.h"
 
 class HesTheme;
-class HesThemePrivate
+class HesThemePrivate : public QObject
 {
     Q_OBJECT
     Q_D_DECLARE_POINTER(HesTheme)

@@ -1,7 +1,36 @@
 #ifndef COMMON_DEFS_H
 #define COMMON_DEFS_H
 
+#include <QObject>
 #include "stdafx.h"
+
+// 枚举类导出 兼容 QT5 低版本
+/**
+ * @brief 如果Qt版本大于等于5.14.0，
+ */
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+#define Q_ENUM_BEGIN(CLASS) \
+    namespace CLASS     \
+    { \
+    Q_NAMESPACE_EXPORT(HES_EXPORT)
+
+#define Q_ENUM_END(CLASS) }
+
+#define Q_ENUM_REGISTER(CLASS) Q_ENUM_NS(CLASS)
+#else
+#define Q_ENUM_BEGIN(CLASS) \
+    class HES_EXPORT CLASS : public QObject \
+    { \
+        Q_OBJECT \
+    public:
+
+#define Q_ENUM_END(CLASS) \
+    private: \
+        Q_DISABLE_COPY(CLASS) \
+    }; 
+
+#define Q_ENUM_REGISTER(CLASS) Q_ENUM(CLASS)
+#endif
 
 
 
@@ -20,7 +49,7 @@ Q_ENUM_BEGIN(HesApplicationType)
         DWMBlur = 0x0005,  /*!< DWMBlur */
     #endif
     };
-Q_ENUM_REGISTER(HesApplicationType)
+Q_ENUM_REGISTER(WindowDisplayMode)
 Q_ENUM_END(HesApplicationType)
 //---------------------------------------------------------------------------
 // End HesApplicationType

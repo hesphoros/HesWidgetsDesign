@@ -5,38 +5,10 @@
 
 // 定义导出宏
 // 如果在编译库时定义了 HESWIDGETSDESIGN_LIBRARY，则导出符号 否则导入符号。
-#ifndef HESWIDGETSDESIGN_LIBRARY
+#ifdef HESWIDGETSDESIGN_LIBRARY
 #define HES_EXPORT Q_DECL_EXPORT
 #else
 #define HES_EXPORT Q_DECL_IMPORT
-#endif
-
-
-// 枚举类导出 兼容 QT5 低版本
-/**
- * @brief 如果Qt版本大于等于5.14.0，
- */
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-#define Q_ENUM_BEGIN(CLASS) \
-    namespace CLASS { \
-    Q_NAMESPACE_EXPORT(HES_EXPORT)
-
-#define Q_ENUM_END(CLASS) }
-
-#define Q_ENUM_REGISTER(CLASS) Q_ENUM_NS(CLASS)
-#else
-#define Q_ENUM_BEGIN(CLASS) \
-    class HES_EXPORT CLASS : public QObject \
-    { \
-        Q_OBJECT \
-    public:
-
-#define Q_ENUM_END(CLASS) \
-    private: \
-        Q_DISABLE_COPY(CLASS) \
-    }; 
-
-#define Q_ENUM_REGISTER(CLASS) Q_ENUM(CLASS)
 #endif
 
 /**
@@ -103,5 +75,7 @@ public:                                                                         
 #define Q_PRIVATE_CREATE(Type, M)                                                  \
     private:                                                                       \
         TYPE _p##M;
+
+
 
 #endif // STDAFX_H

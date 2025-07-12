@@ -2,7 +2,7 @@
 # HesWidgetsDesign 库项目配置
 # ============================================================================
 
-project(HesWidgetsDesign LANGUAGES CXX)
+project(HesWidgetsDesign VERSION 1.0.0 LANGUAGES CXX)
 
 # ============================================================================
 # 源文件收集 - 自动扫描
@@ -30,6 +30,9 @@ file(GLOB_RECURSE SOURCES
     "private/*.cpp" 
     "private/*.c"
 )
+
+# 自动收集资源文件
+file(GLOB_RECURSE QRC_FILES "*.qrc")
 
 # 平台特定源文件
 if(WIN32)
@@ -75,6 +78,7 @@ endif()
 add_library(${PROJECT_NAME} SHARED 
     ${ALL_HEADERS}
     ${SOURCES}
+    ${QRC_FILES}
 )
 
 # ============================================================================
@@ -111,10 +115,10 @@ target_link_libraries(${PROJECT_NAME}
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} 
         PRIVATE
-            ${DWMAPI_LIB}
-            ${USER32_LIB}
-            ${KERNEL32_LIB}
-            ${NTDLL_LIB}
+            dwmapi
+            user32
+            kernel32
+            ntdll
     )
 endif()
 

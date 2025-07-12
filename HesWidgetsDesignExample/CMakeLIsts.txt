@@ -14,6 +14,9 @@ file(GLOB_RECURSE EXAMPLE_SOURCES "*.cpp")
 file(GLOB_RECURSE EXAMPLE_UI_FILES "*.ui")
 file(GLOB_RECURSE EXAMPLE_QRC_FILES "*.qrc")
 
+# 排除 simple_test.cpp，因为它有自己的 main 函数
+list(REMOVE_ITEM EXAMPLE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/simple_test.cpp")
+
 # 检查是否有源文件，如果没有则创建一个默认的 main.cpp
 if(NOT EXAMPLE_SOURCES)
     message(STATUS "No source files found in Example project, creating default main.cpp")
@@ -87,6 +90,7 @@ target_include_directories(${PROJECT_NAME}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_SOURCE_DIR}/HesWidgetsDesign/include
         ${CMAKE_SOURCE_DIR}/HesWidgetsDesign/include/common
+        ${CMAKE_SOURCE_DIR}/HesWidgetsDesign/DeveloperComponents
 )
 
 # ============================================================================
@@ -182,8 +186,6 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         PATTERN "*.txt"
     PATTERN "CMakeFiles" EXCLUDE
     PATTERN "build" EXCLUDE
-)
-    CXX_STANDARD_REQUIRED ON
 )
 
 # 定义预处理器宏

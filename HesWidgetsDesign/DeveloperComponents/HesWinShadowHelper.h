@@ -10,6 +10,13 @@
 #include <dwmapi.h>
 #include <windowsx.h>
 
+// Windows 内部类型定义
+#ifndef NTSTATUS
+typedef LONG NTSTATUS;
+#endif
+
+
+
 /*
  * ============================================================================
  * Windows 版本号定义与对应关系表
@@ -84,13 +91,13 @@
 #define WIN11_ORIGIN_BUILD      22000       // Windows 11 原始版本
 #define WIN11_22H2_BUILD        22621       // Windows 11 22H2
 
-class HesWinShadowHelper
+class HesWinShadowHelper : public QObject
 {
     Q_OBJECT
     HES_SINGLETON_CREATE(HesWinShadowHelper)
 private:
     explicit HesWinShadowHelper(QObject* parent = nullptr);
-    ~HesWinShadowHelper() = default;
+    ~HesWinShadowHelper() override;
 public:
     /**
      * @brief 初始化 DWM API

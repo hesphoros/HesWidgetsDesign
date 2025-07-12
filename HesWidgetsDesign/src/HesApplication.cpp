@@ -2,7 +2,7 @@
 
 #include "HesTheme.h"
 #include "HesWinShadowHelper.h"
-#include "private/HesApplicationPrivate.h"
+#include "HesApplicationPrivate.h"
 
 #include <QApplication>
 #include <QCursor>
