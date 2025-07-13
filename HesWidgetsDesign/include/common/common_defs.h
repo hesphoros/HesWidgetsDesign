@@ -189,6 +189,73 @@ Q_ENUM_END(HesTextType)
 
 
 //---------------------------------------------------------------------------
+// HesEventBusType
+//---------------------------------------------------------------------------
+Q_ENUM_BEGIN(HesEventBusType)
+enum EventBusReturnType
+{
+    Success             = 0x0000,  /*!< 成功         */
+    EventInvalid        = 0x0001,  /*!< 事件无效     */
+    EventNameInvalid    = 0x0002,  /*!< 事件名称无效 */
+
+};
+Q_ENUM_REGISTER(EventBusReturnType)
+Q_ENUM_END(HesEventBusType)
+//---------------------------------------------------------------------------
+// End HesEventBusType
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// HesNavigationType
+//---------------------------------------------------------------------------
+Q_ENUM_BEGIN(HesNavigationType)
+/**
+ * @brief 该枚举用于提示导航节点操作的结果
+ */
+enum NodeOperateReturnType
+{
+    Success                 = 0x0000,  /*!< 操作成功  */
+    TargetNodeInvalid       = 0x0001,  /*!< 目标节点无效 */
+    TargetNodeTypeError     = 0x0002,  /*!< 目标节点类型错误 */
+    TargetNodeDepthLimit    = 0x0003,  /*!< 目标节点深度限制 */
+    PageInvalid             = 0x0004,  /*!< 页面无效 */
+    FooterUpperLimit        = 0x0005,  /*!< 页脚节点上限 */
+};
+Q_ENUM_REGISTER(NodeOperateReturnType)
+
+/**
+ * @brief 该枚举用于提示导航展示模式
+ * @enum HesNavigationType::NavigationDisplayMode
+ */
+enum NavigationDisplayMode
+{
+    Auto    = 0x0000,  /*!< 自动模式  根据窗口大小自动改变*/
+    Minimal = 0x0001,  /*!< 最小化模式      */
+    Compact = 0x0002,  /*!< 图标列表模式    */
+    Maximal = 0x0003,  /*!< 展开列表模式    */
+};
+Q_ENUM_REGISTER(NavigationDisplayMode)
+/**
+ * @brief 该枚举用于提示节点类型，用于内部逻辑计算
+ * @enum HesNavigationType::NavigationNodeType
+ */
+enum NavigationNodeType
+{
+    PageNode    = 0x0000,  // 展开列表节点
+    FooterNode  = 0x0001,  // 页脚节点
+};
+Q_ENUM_REGISTER(NavigationNodeType)
+Q_ENUM_END(HesNavigationType)
+
+//---------------------------------------------------------------------------
+// End HesNavigationType
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
 // HesIconType
 //---------------------------------------------------------------------------
 Q_ENUM_BEGIN(HesIconType)

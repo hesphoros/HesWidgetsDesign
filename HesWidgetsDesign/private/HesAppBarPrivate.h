@@ -47,7 +47,7 @@ private:
     HesToolButton*                      _stayTopButton{nullptr};  /*!< 置顶按钮          */
     HesToolButton*                          _minButton{nullptr};  /*!< 最小化按钮        */
     HesToolButton*                          _maxButton{nullptr};  /*!< 最大化按钮        */
-    HesToolButton*                        _closeButton{nullptr};  /*!< 关闭按钮          */
+    HesIconButton*                        _closeButton{nullptr};  /*!< 关闭按钮          */
     QScreen*                               _lastScreen{nullptr};  /*!< 上次屏幕 ?        */
     HesText*                               _titleLabel{nullptr};  /*!< 标题标签          */
     QLabel*                                 _iconLabel{nullptr};  /*!< 图标标签          */

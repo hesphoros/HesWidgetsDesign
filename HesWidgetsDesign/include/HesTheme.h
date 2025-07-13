@@ -6,6 +6,8 @@
 #include "Singleton.h"
 
 #define hesTheme HesTheme::getInstance()
+#define HesThemeColor(themeMode, themeColor) \
+    hesTheme->getThemeColor(themeMode, HesThemeType::themeColor)
 class QPainter;
 class HesThemePrivate;
 

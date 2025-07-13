@@ -113,7 +113,7 @@ public:
 
     void setWindowButtonFlag(HesAppBarType::ButtonType   buttonFlag, bool isEnabled = true );
     void setWindowButtonFlags(HesAppBarType::ButtonFlags buttonFlags);
-
+    HesAppBarType::ButtonFlags getWindowButtonFlags() const;
     void setRouteBackButtonEnable(bool isEnable);
 
     void closeWindow();

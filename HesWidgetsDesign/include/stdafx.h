@@ -11,6 +11,27 @@
 #define HES_EXPORT Q_DECL_IMPORT
 #endif
 
+
+
+#define Q_DEFINE_NOTIFY_PROPERTY(TYPE, M)                        \
+    Q_PROPERTY(TYPE p##M MEMBER _p##M NOTIFY p##M##Changed)      \
+public:                                                          \
+    Q_SIGNAL void p##M##Changed();                               \
+    void set##M(TYPE M)                                          \
+    {                                                            \
+        _p##M = std::move(M);                                    \
+        Q_EMIT p##M##Changed();                                  \
+    }                                                            \
+    TYPE get##M() const                                          \
+    {                                                            \
+        return _p##M;                                            \
+    }                                                            \
+                                                                 \
+private:                                                         \
+    TYPE _p##M;
+
+
+
 /**
  * @brief Q_DECLARE_PIMPL
  * @details 此宏用于在类中声明一个私有的实现类（PIMPL），
@@ -72,10 +93,23 @@ public:                                                                         
     private:                                                                       \
         TYPE _p##M;  // 定义私有成员变量 _p##M
 
-#define Q_PRIVATE_CREATE(Type, M)                                                  \
+#define Q_PRIVATE_CREATE(TYPE, M)                                                  \
     private:                                                                       \
         TYPE _p##M;
 
+#define Q_DEFINE_ACCESSORS(TYPE, M)                                                \
+public:                                                                            \
+    void set##M(TYPE M)                                                            \
+    {                                                                              \
+        _p##M = std::move(M);                                                      \
+    }                                                                              \
+    TYPE get##M() const                                                            \
+    {                                                                              \
+        return _p##M;                                                              \
+    }                                                                              \
+                                                                                   \
+private:                                                                           \
+    TYPE _p##M;
 
 
 #endif // STDAFX_H
